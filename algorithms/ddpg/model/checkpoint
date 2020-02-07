@@ -1,0 +1,2 @@
+model_checkpoint_path: "ddpg_none_fuzzy"
+all_model_checkpoint_paths: "ddpg_none_fuzzy"

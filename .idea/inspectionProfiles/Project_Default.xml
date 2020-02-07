@@ -1,0 +1,28 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="15">
+            <item index="0" class="java.lang.String" itemvalue="protobuf" />
+            <item index="1" class="java.lang.String" itemvalue="tensorflow-estimator" />
+            <item index="2" class="java.lang.String" itemvalue="Werkzeug" />
+            <item index="3" class="java.lang.String" itemvalue="opencv-python" />
+            <item index="4" class="java.lang.String" itemvalue="python-utils" />
+            <item index="5" class="java.lang.String" itemvalue="progressbar2" />
+            <item index="6" class="java.lang.String" itemvalue="mujoco-py" />
+            <item index="7" class="java.lang.String" itemvalue="pandas" />
+            <item index="8" class="java.lang.String" itemvalue="tqdm" />
+            <item index="9" class="java.lang.String" itemvalue="tensorflow" />
+            <item index="10" class="java.lang.String" itemvalue="seaborn" />
+            <item index="11" class="java.lang.String" itemvalue="pyzmq" />
+            <item index="12" class="java.lang.String" itemvalue="pytz" />
+            <item index="13" class="java.lang.String" itemvalue="stable-baselines" />
+            <item index="14" class="java.lang.String" itemvalue="zmq" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

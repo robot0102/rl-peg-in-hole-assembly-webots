@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.4
+protoFileHash: 862a6ff00722883f4b0c60e36af43c08
+containsDevices: 1
+baseType: Solid
+slotType: 
+parameters: translation,rotation,name,handSlot,color
+tags: 
+license:  Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+licenseUrl:  https://cyberbotics.com/webots_assets_license
+documentationUrl: https://www.cyberbotics.com/doc/guide/irb4600-40
+info: The\s"IRB\s4600/40"\sis\sa\s6\sDOF\sarm\sdeveloped\sby\sABB:\shttps://new.abb.com/products/robotics/industrial-robots/irb-4600\nIt\shas\sa\spayload\sof\s40kg.\n
