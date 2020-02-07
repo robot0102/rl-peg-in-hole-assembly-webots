@@ -255,16 +255,17 @@ def plot_roboschool_test_reward():
         # 'Walker2d-v2',
         # 'HalfCheetah-v2',
         # 'Ant-v2',
-        'Peg-in-hole-single_assembly'
+        # 'Peg-in-hole-single_assembly',
+        '2_Friction_0.5_Clearance_1_Single_seed_1'
     ]
     fig = plt.figure(figsize=(6, 5))
     fig.tight_layout()
     plt.rcParams.update({'font.size': 8, 'font.serif': 'Times New Roman'})
-    policy_name_vec = ['Average_TD3', 'TD3']
+    policy_name_vec = ['Average_TD3']
 
     for i in range(len(env_name_vec)):
         plt.subplot(2, 2, i+1)
-        legend_vec = plot_reward_curves(result_path='results/runs/dual_assembly',
+        legend_vec = plot_reward_curves(result_path='results/runs/single_assembly',
                                         env_name=env_name_vec[i],
                                         policy_name_vec=policy_name_vec, fig=fig)
         # plt.yticks([0, 1000, 2000, 3000])

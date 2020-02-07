@@ -151,6 +151,10 @@ class Solver(object):
             self.writer_train = SummaryWriter(logdir=self.log_dir + '_train')
         self.writer_test = SummaryWriter(logdir=self.log_dir)
         self.pbar = tqdm(total=self.args.max_timesteps, initial=self.total_timesteps, position=0, leave=True)
+        
+        if self.args.load_policy:
+            self.policy.load(self.file_name + str(self.args.load_policy_idx), self.log_dir)
+        
         done = False
         safe_or_not = True
         self.reset()
