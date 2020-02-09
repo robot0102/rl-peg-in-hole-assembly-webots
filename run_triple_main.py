@@ -38,7 +38,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_video", default=False)
     parser.add_argument("--video_size", default=(600, 400))
     parser.add_argument("--save_all_policy", default=True)
-    parser.add_argument("--load_policy", default=True)
+    parser.add_argument("--load_policy", default=False)
     parser.add_argument("--load_policy_idx", default='100000')
     parser.add_argument("--evaluate_Q_value", default=False)
     parser.add_argument("--reward_name", default='r_s')
@@ -67,11 +67,11 @@ if __name__ == "__main__":
 
     env = ArmEnv()
     policy_name_vec = ['Average_TD3']
-    average_steps = [2, 3]
+    average_steps = [2]
     for policy_name in policy_name_vec:
         for num_steps in average_steps:
             args.average_steps = num_steps
-            for i in range(0, 5):
+            for i in range(0, 1):
                 args.policy_name = policy_name
                 args.seed = i
                 main(env, args)

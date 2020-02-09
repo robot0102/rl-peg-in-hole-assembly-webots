@@ -1,0 +1,54 @@
+step_num 137
+safe_or_not True
+done True
+total_timesteps 2162
+episode_reward -1.045000000000001
+
+step_num 182
+safe_or_not True
+done True
+total_timesteps 2344
+episode_reward -1.7200000000000015
+
+step_num 136
+safe_or_not True
+done True
+total_timesteps 2480
+episode_reward -1.0300000000000011
+
+step_num 176
+safe_or_not True
+done True
+total_timesteps 2656
+episode_reward -1.6300000000000012
+
+step_num 135
+safe_or_not True
+done True
+total_timesteps 2791
+episode_reward -1.015000000000001
+
+step_num 153
+safe_or_not True
+done True
+total_timesteps 2944
+episode_reward -1.285000000000001
+
+step_num 156
+safe_or_not True
+done True
+total_timesteps 3100
+episode_reward -1.3300000000000012
+
+step_num 188
+eval_avg_reward -1.8100000000000014
+
+safe_or_not True
+done False
+total_timesteps 3300
+episode_reward -2.0000000000000013
+
+safe_or_not True
+done False
+total_timesteps 3500
+episode_reward -2.0000000000000013
