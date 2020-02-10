@@ -10,7 +10,7 @@ from tqdm import tqdm
 from tensorboardX import SummaryWriter
 from scipy import signal
 from ..methods import ATD3, ATD3_RNN, Average_TD3, DDPG, \
-    TD3, SAC, DDPG_RNN, TD3_RNN, ATD3_IM, SAAC
+    TD3, SAC, DDPG_RNN, TD3_RNN, ATD3_IM, SAAC, HRLACOP
 
 
 class Solver(object):
@@ -58,8 +58,11 @@ class Solver(object):
             policy = SAC.SAC(state_dim, action_dim, max_action, self.env.action_space)
         elif 'SAAC' == args.policy_name:
             policy = SAAC.SAAC(state_dim, action_dim, max_action)
+        elif 'HRLACOP' == args.policy_name:
+            policy = HRLACOP.HRLACOP(args, state_dim, action_dim, max_action, option_num=self.args.option_num)
         else:
             policy = TD3.TD3(state_dim, action_dim, max_action)
+        
         self.policy = policy
         self.replay_buffer = utils.ReplayBuffer()
 
