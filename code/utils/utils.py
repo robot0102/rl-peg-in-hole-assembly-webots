@@ -54,6 +54,126 @@ class ReplayBuffer(object):
             d.append(np.array(D, copy=False))
 
         return np.array(x), np.array(y), np.array(u), np.array(r).reshape(-1, 1), np.array(d).reshape(-1, 1)
+    
+    
+class ReplayBufferOption(object):
+    def __init__(self, max_size=1e6):
+        self.storage = []
+        self.max_size = max_size
+        self.ptr = 0
+
+    def get(self, idx):
+        return self.storage[idx]
+
+    def add(self, data):
+        if len(self.storage) == self.max_size:
+            self.storage[int(self.ptr)] = data
+            self.ptr = (self.ptr + 1) % self.max_size
+        else:
+            self.storage.append(data)
+
+    def add_final_reward(self, final_reward, steps, delay=0):
+        len_buffer = len(self.storage)
+        for i in range(len_buffer - steps - delay, len_buffer - delay):
+            item = list(self.storage[i])
+            item[3] += final_reward
+            self.storage[i] = tuple(item)
+
+    def add_specific_reward(self, reward_vec, idx_vec):
+        for i in range(len(idx_vec)):
+            time_step_num = int(idx_vec[i])
+            item = list(self.storage[time_step_num])
+            item[3] += reward_vec[i]
+            self.storage[time_step_num] = tuple(item)
+
+    def sample_on_policy(self, batch_size, option_buffer_size):
+        return self.sample_from_storage(batch_size, self.storage[-option_buffer_size:])
+
+    def sample(self, batch_size):
+        return self.sample_from_storage(batch_size, self.storage)
+
+    @staticmethod
+    def sample_from_storage(batch_size, storage):
+        ind = np.random.randint(0, len(storage), size=batch_size)
+        state, next_state, action, option, next_option, reward, aux_reward, done = [], [], [], [], [], [], [], []
+        for i in ind:
+            X, Y, U, O, O_1, R, R_a, D = storage[i]
+            state.append(np.array(X, copy=False))
+            next_state.append(np.array(Y, copy=False))
+            action.append(np.array(U, copy=False))
+            option.append(np.array(O, copy=False))
+            next_option.append(np.array(O_1, copy=False))
+            reward.append(np.array(R, copy=False))
+            aux_reward.append(np.array(R_a, copy=False))
+            done.append(np.array(D, copy=False))
+        return np.array(state), \
+               np.array(next_state), \
+               np.array(action), \
+               np.array(option).reshape(-1, 1), \
+               np.array(next_option), \
+               np.array(reward).reshape(-1, 1), \
+               np.array(aux_reward).reshape(-1, 1), \
+               np.array(done).reshape(-1, 1)
+
+    def save_buffer(self, path):
+        np.save(path, self.storage)
+
+
+class ReplayBufferHighLevel(object):
+    def __init__(self, max_size=1e6):
+        self.storage = []
+        self.max_size = max_size
+        self.ptr = 0
+
+    def get(self, idx):
+        return self.storage[idx]
+
+    def add(self, data):
+        if len(self.storage) == self.max_size:
+            self.storage[int(self.ptr)] = data
+            self.ptr = (self.ptr + 1) % self.max_size
+        else:
+            self.storage.append(data)
+
+    def add_final_reward(self, final_reward, steps, delay=0):
+        len_buffer = len(self.storage)
+        for i in range(len_buffer - steps - delay, len_buffer - delay):
+            item = list(self.storage[i])
+            item[3] += final_reward
+            self.storage[i] = tuple(item)
+
+    def add_specific_reward(self, reward_vec, idx_vec):
+        for i in range(len(idx_vec)):
+            time_step_num = int(idx_vec[i])
+            item = list(self.storage[time_step_num])
+            item[3] += reward_vec[i]
+            self.storage[time_step_num] = tuple(item)
+
+    def sample_on_policy(self, batch_size, option_buffer_size):
+        return self.sample_from_storage(batch_size, self.storage[-option_buffer_size:])
+
+    def sample(self, batch_size):
+        return self.sample_from_storage(batch_size, self.storage)
+
+    @staticmethod
+    def sample_from_storage(batch_size, storage):
+        ind = np.random.randint(0, len(storage), size=batch_size)
+        state, next_state, option, next_option, reward = [], [], [], [], []
+        for i in ind:
+            X, Y, O, U, R = storage[i]
+            state.append(np.array(X, copy=False))
+            next_state.append(np.array(Y, copy=False))
+            option.append(np.array(O, copy=False))
+            next_option.append(np.array(U, copy=False))
+            reward.append(np.array(R, copy=False))
+        return np.array(state), \
+               np.array(next_state), \
+               np.array(option), \
+               np.array(reward).reshape(-1, 1),\
+               np.array(next_option).reshape(-1, 1)
+
+    def save_buffer(self, path):
+        np.save(path, self.storage)
 
 
 def read_table(file_name='../../data/joint_angle.xls', sheet_name='walk_fast'):
