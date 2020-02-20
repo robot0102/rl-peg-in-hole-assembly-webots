@@ -30,8 +30,8 @@ def main(env, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy_name", default='TD3')  # Policy name
-    parser.add_argument("--env_name", default="Peg-in-hole-single_assembly")  # OpenAI gym environment name
-    parser.add_argument("--log_path", default='runs/single_assembly')
+    parser.add_argument("--env_name", default="Peg-in-hole-double_assembly")  # OpenAI gym environment name
+    parser.add_argument("--log_path", default='runs/double_f05_c05_a1_load_double_c1_100000')
 
     parser.add_argument("--eval_only", default=False)
     parser.add_argument("--render", default=False)
@@ -73,16 +73,18 @@ if __name__ == "__main__":
     parser.add_argument("--max_episode_steps", default=200, type=int)
 
     parser.add_argument("--average_steps", default=20, type=int)
+    parser.add_argument("--learning_rate", default=1e-3, type=float)
+    parser.add_argument("--option_change", default=100, type=int) #How many time steps purely random policy is run for
 
     args = parser.parse_args()
 
     env = ArmEnv()
-    policy_name_vec = ['Average_TD3']
-    average_steps = [2]
+    policy_name_vec = ['TD3', 'DDPG']
+    # option_num = [4]
     for policy_name in policy_name_vec:
-        for num_steps in average_steps:
-            args.average_steps = num_steps
-            for i in range(0, 1):
-                args.policy_name = policy_name
-                args.seed = i
-                main(env, args)
+        # for num_steps in option_num:
+            # args.option_num = num_steps
+        for i in range(0, 5):
+            args.policy_name = policy_name
+            args.seed = i
+            main(env, args)

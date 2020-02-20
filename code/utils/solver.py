@@ -122,10 +122,10 @@ class Solver(object):
             self.evaluations.append(avg_reward)
             self.writer_test.add_scalar('ave_reward', avg_reward, self.total_timesteps)
 
-            if self.args.save_all_policy:
-                self.policy.save(
-                    self.file_name + str(int(int(self.total_timesteps/self.args.eval_freq) * self.args.eval_freq)),
-                    directory=self.log_dir)
+            # if self.args.save_all_policy:
+            #     self.policy.save(
+            #         self.file_name + str(int(int(self.total_timesteps/self.args.eval_freq) * self.args.eval_freq)),
+            #         directory=self.log_dir)
 
             if self.args.evaluate_Q_value:
                 true_Q_value = cal_true_value(env=self.env, policy=self.policy,
@@ -160,6 +160,11 @@ class Solver(object):
             self.log_dir = '{}/{}/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
                                                         self.args.policy_name, self.args.average_steps, self.args.env_name,
                                                         self.args.seed)
+        elif 'HRLACOP' in self.args.policy_name:
+            self.log_dir = '{}/{}/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                           self.args.policy_name, self.args.option_num,
+                                                           self.args.env_name,
+                                                           self.args.seed)
         else:
             self.log_dir = '{}/{}/{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
                                                         self.args.policy_name, self.args.env_name,
@@ -311,9 +316,9 @@ class Solver(object):
         np.save(self.log_dir + "/test_accuracy", self.evaluations)
         utils.write_table(self.log_dir + "/test_accuracy", np.asarray(self.evaluations))
 
-        # save the replay buffer
-        if self.args.save_data:
-            self.replay_buffer_low.save_buffer(self.log_dir + "/buffer_data")
+        # # save the replay buffer
+        # if self.args.save_data:
+        #     self.replay_buffer_low.save_buffer(self.log_dir + "/buffer_data")
 
         if self.args.evaluate_Q_value:
             true_Q_value = cal_true_value(env=self.env, policy=self.policy,

@@ -268,11 +268,11 @@ class ArmEnv(object):
         self.plt_time.clear()
         self.plt_current_time = 0
 
-        print('initial state:')
-        print("State 0-3", self.init_state[0:3])
-        print("State 3-6", self.init_state[3:6])
-        print("State 6-9", self.init_state[6:9])
-        print("State 9-12", self.init_state[9:12])
+        # print('initial state:')
+        # print("State 0-3", self.init_state[0:3])
+        # print("State 3-6", self.init_state[3:6])
+        # print("State 6-9", self.init_state[6:9])
+        # print("State 9-12", self.init_state[9:12])
         done = False
 
         # reset simulation
@@ -307,7 +307,7 @@ class ArmEnv(object):
         self.z -= action[2]
         self.alpha += action[3]
         self.beta += action[4]
-        # self.gamma -= action[5]
+        self.gamma -= action[5]
 
         # bound position
         self.x = np.clip(self.x, self.initPosition[0] - self.armPosition[0] - 0.02, self.initPosition[0] - self.armPosition[0] + 0.02)
