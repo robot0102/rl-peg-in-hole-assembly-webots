@@ -8,6 +8,7 @@ import glob
 from ..utils import utils
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
+
 from scipy import signal
 import random, math
 from ..methods import ATD3, ATD3_RNN, Average_TD3, DDPG, \
@@ -122,11 +123,6 @@ class Solver(object):
             self.evaluations.append(avg_reward)
             self.writer_test.add_scalar('ave_reward', avg_reward, self.total_timesteps)
 
-            # if self.args.save_all_policy:
-            #     self.policy.save(
-            #         self.file_name + str(int(int(self.total_timesteps/self.args.eval_freq) * self.args.eval_freq)),
-            #         directory=self.log_dir)
-
             if self.args.evaluate_Q_value:
                 true_Q_value = cal_true_value(env=self.env, policy=self.policy,
                                               replay_buffer=self.replay_buffer,
@@ -156,6 +152,7 @@ class Solver(object):
 
     def train(self):
         self.evaluations = [evaluate_policy(self.env, self.policy, self.args)]
+        
         if 'Average' in self.args.policy_name:
             self.log_dir = '{}/{}/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
                                                         self.args.policy_name, self.args.average_steps, self.args.env_name,
@@ -165,8 +162,17 @@ class Solver(object):
                                                            self.args.policy_name, self.args.option_num,
                                                            self.args.env_name,
                                                            self.args.seed)
+            
+            self.log_transfer_dir = '{}/{}_transfer/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                           self.args.policy_name, self.args.option_num,
+                                                           self.args.env_name,
+                                                           self.args.seed)
         else:
             self.log_dir = '{}/{}/{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                        self.args.policy_name, self.args.env_name,
+                                                        self.args.seed)
+            
+            self.log_transfer_dir = '{}/{}_transfer/{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
                                                         self.args.policy_name, self.args.env_name,
                                                         self.args.seed)
 
@@ -176,9 +182,16 @@ class Solver(object):
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
+        print("---------------------------------------")
+        print("Settings: %s" % self.log_transfer_dir)
+        print("---------------------------------------")
+        if not os.path.exists(self.log_transfer_dir):
+            os.makedirs(self.log_transfer_dir)
+
         # TesnorboardX
         if self.args.evaluate_Q_value:
             self.writer_train = SummaryWriter(logdir=self.log_dir + '_train')
+        
         self.writer_test = SummaryWriter(logdir=self.log_dir)
         self.pbar = tqdm(total=self.args.max_timesteps, initial=self.total_timesteps, position=0, leave=True)
         
@@ -263,12 +276,6 @@ class Solver(object):
                                                         size=self.env.action_space.shape[0])).clip(
                         self.env.action_space.low[0], self.env.action_space.high[0])
 
-            if 'IM' in self.args.policy_name:
-                action_im = np.copy(action)
-                action = utils.calc_torque_from_impedance(action_im,
-                                                          np.asarray(self.obs)[8:-2]).clip(
-                        self.env.action_space.low, self.env.action_space.high)
-
             new_obs, _, reward, done, safe_or_not = self.env.step(action)
             # new_obs, reward, done, _ = self.env.step(action)
 
@@ -283,7 +290,7 @@ class Solver(object):
                 new_obs_vec = utils.fifo_data(np.copy(self.obs_vec), new_obs)
                 self.replay_buffer.add((np.copy(self.obs_vec), new_obs_vec, action, reward, done_bool))
                 self.obs_vec = utils.fifo_data(self.obs_vec, new_obs)
-            elif 'HRLACOP'==self.args.policy_name:
+            elif 'HRLACOP' == self.args.policy_name:
                 if self.total_timesteps <= self.args.start_timesteps:
                     self.replay_buffer_low.add(
                         (self.obs, new_obs, action, self.option, self.next_option, reward, auxiliary_reward, done_bool))
@@ -299,11 +306,10 @@ class Solver(object):
             self.timesteps_since_eval += 1
             self.timesteps_calc_Q_vale += 1
 
-        # Final evaluation
         avg_reward = evaluate_policy(self.env, self.policy, self.args)
         self.evaluations.append(avg_reward)
         print('evaluations', self.evaluations)
-
+        
         if self.best_reward < avg_reward:
             self.best_reward = avg_reward
             print("Best reward! Total T: %d Episode T: %d Reward: %f" %
@@ -312,9 +318,13 @@ class Solver(object):
 
         if self.args.save_all_policy:
             self.policy.save(self.file_name + str(int(self.args.max_timesteps)), directory=self.log_dir)
-
-        np.save(self.log_dir + "/test_accuracy", self.evaluations)
-        utils.write_table(self.log_dir + "/test_accuracy", np.asarray(self.evaluations))
+        
+        if self.args.load_policy:
+            np.save(self.log_transfer_dir + "/test_accuracy", self.evaluations)
+            utils.write_table(self.log_transfer_dir + "/test_accuracy", np.asarray(self.evaluations))
+        else:
+            np.save(self.log_dir + "/test_accuracy", self.evaluations)
+            utils.write_table(self.log_dir + "/test_accuracy", np.asarray(self.evaluations))
 
         # # save the replay buffer
         # if self.args.save_data:
@@ -331,66 +341,145 @@ class Solver(object):
 
         self.env.reset()
 
-    def eval_only(self, is_reset=True):
-        video_dir = '{}/video_all/{}_{}'.format(self.result_path, self.args.policy_name,
-                                                self.args.env_name)
-        if not os.path.exists(video_dir):
-            os.makedirs(video_dir)
-        model_path_vec = glob.glob(self.result_path + '/{}/{}_{}_seed*'.format(
-            self.args.log_path, self.args.policy_name, self.args.env_name))
-        print(model_path_vec)
-        for model_path in model_path_vec:
-            # print(model_path)
-            self.policy.load("%s" % (self.file_name + self.args.load_policy_idx), directory=model_path)
-            for _ in range(1):
-                video_name = video_dir + '/{}_{}_{}.mp4'.format(
-                    datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                    self.file_name, self.args.load_policy_idx)
-                if self.args.save_video:
-                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-                    out_video = cv2.VideoWriter(video_name, fourcc, 60.0, self.args.video_size)
-                obs = self.env.reset()
-                # print(self.env.step(np.asarray([0, 0, 0, 0, 0, 0])))
-                if 'RNN' in self.args.policy_name:
-                    obs_vec = np.dot(np.ones((self.args.seq_len, 1)), obs.reshape((1, -1)))
-
-                obs_mat = np.asarray(obs)
+    def eval_only(self):
+        self.evaluations = [evaluate_policy(self.env, self.policy, self.args)]
+    
+        if 'Average' in self.args.policy_name:
+            self.log_dir = '{}/{}/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                           self.args.policy_name, self.args.average_steps,
+                                                           self.args.env_name,
+                                                           self.args.seed)
+        elif 'HRLACOP' in self.args.policy_name:
+            self.log_dir = '{}/{}/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                           self.args.policy_name, self.args.option_num,
+                                                           self.args.env_name,
+                                                           self.args.seed)
+        
+            self.log_transfer_dir = '{}/{}_transfer/{}_{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                                             self.args.policy_name,
+                                                                             self.args.option_num,
+                                                                             self.args.env_name,
+                                                                             self.args.seed)
+        else:
+            self.log_dir = '{}/{}/{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                        self.args.policy_name, self.args.env_name,
+                                                        self.args.seed)
+        
+            self.log_transfer_dir = '{}/{}_transfer/{}_{}_seed_{}'.format(self.result_path, self.args.log_path,
+                                                                          self.args.policy_name, self.args.env_name,
+                                                                          self.args.seed)
+    
+        print("---------------------------------------")
+        print("Settings: %s" % self.log_dir)
+        print("---------------------------------------")
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
+    
+        print("---------------------------------------")
+        print("Settings: %s" % self.log_transfer_dir)
+        print("---------------------------------------")
+        if not os.path.exists(self.log_transfer_dir):
+            os.makedirs(self.log_transfer_dir)
+    
+        # TesnorboardX
+        if self.args.evaluate_Q_value:
+            self.writer_train = SummaryWriter(logdir=self.log_dir + '_train')
+    
+        self.writer_test = SummaryWriter(logdir=self.log_dir)
+        self.pbar = tqdm(total=self.args.max_timesteps, initial=self.total_timesteps, position=0, leave=True)
+    
+        if self.args.load_policy:
+            self.policy.load(self.file_name + str(self.args.load_policy_idx), self.log_dir)
+    
+        done = False
+        safe_or_not = True
+        self.cumulative_reward = 0.
+        self.steps_done = 0
+        option_data = []
+        self.reset()
+    
+        while self.total_timesteps < self.args.eval_max_timesteps:
+            # no need to train
+            # self.train_once()
+            
+            if done or not safe_or_not or self.episode_timesteps + 1 > self.args.max_episode_steps:
+                print('safe_or_not', safe_or_not)
+                print('done', done)
+                print('total_timesteps', self.total_timesteps)
+                print('episode_reward', self.episode_reward)
+                self.eval_once()
+                self.reset()
                 done = False
-
-                while not done:
-                    if 'RNN' in self.args.policy_name:
-                        action = self.policy.select_action(np.array(obs_vec))
-                    else:
-                        action = self.policy.select_action(np.array(obs))
-
-                    if 'IM' in self.args.policy_name:
-                        action_im = np.copy(action)
-                        action = utils.calc_torque_from_impedance(action_im, np.asarray(obs)[8:-2])
-
-                    obs, reward, done, _ = self.env.step(action)
-
-                    if 'RNN' in self.args.policy_name:
-                        obs_vec = utils.fifo_data(obs_vec, obs)
-
-                    if 0 != self.args.state_noise:
-                        obs[8:20] += np.random.normal(0, self.args.state_noise, size=obs[8:20].shape[0]).clip(
-                            -1, 1)
-
-                    obs_mat = np.c_[obs_mat, np.asarray(obs)]
-
-                    if self.args.save_video:
-                        img = self.env.render(mode='rgb_array')
-                        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                        out_video.write(img)
-                    elif self.args.render:
-                        self.env.render(mode='human')
-
-                if not self.args.render:
-                    utils.write_table(video_name + '_state', np.transpose(obs_mat))
-                if self.args.save_video:
-                    out_video.release()
-        if is_reset:
-            self.env.reset()
+                safe_or_not = True
+        
+            # Select action randomly or according to policy
+            if 'RNN' in self.args.policy_name:
+                action = self.policy.select_action(np.array(self.obs_vec))
+            elif 'SAC' in self.args.policy_name:
+                action = self.policy.select_action(np.array(self.obs), eval=False)
+            elif 'HRLACOP' == self.args.policy_name:
+                if (self.total_timesteps % self.args.option_change == 0):
+                    self.steps_done += 1
+                    self.next_high_obs = self.obs
+                    action, self.option = self.policy.select_action(np.array(self.obs),
+                                                                    self.option,
+                                                                    change_option=True)
+    
+                else:
+                    action, self.option = self.policy.select_action(np.array(self.obs),
+                                                                    self.option,
+                                                                    change_option=False)
+            else:
+                action = self.policy.select_action(np.array(self.obs))
+        
+            # if self.args.expl_noise != 0:
+            #     action = (action + np.random.normal(0, self.args.expl_noise,
+            #                                         size=self.env.action_space.shape[0])).clip(
+            #         self.env.action_space.low[0], self.env.action_space.high[0])
+        
+            new_obs, _, reward, done, safe_or_not = self.env.step(action)
+        
+            self.cumulative_reward += reward
+            self.episode_reward += reward
+        
+            done_bool = 0 if self.episode_timesteps + 1 == self.args.max_episode_steps else float(done)
+        
+            self.obs = new_obs
+            self.episode_timesteps += 1
+            self.total_timesteps += 1
+            self.timesteps_since_eval += 1
+            self.timesteps_calc_Q_vale += 1
+    
+        avg_reward = evaluate_policy(self.env, self.policy, self.args)
+        self.evaluations.append(avg_reward)
+        print('evaluations', self.evaluations)
+    
+        if self.best_reward < avg_reward:
+            self.best_reward = avg_reward
+            print("Best reward! Total T: %d Episode T: %d Reward: %f" %
+                  (self.total_timesteps, self.episode_timesteps, avg_reward))
+            self.policy.save(self.file_name, directory=self.log_dir)
+    
+        if self.args.save_all_policy:
+            self.policy.save(self.file_name + str(int(self.args.max_timesteps)), directory=self.log_dir)
+    
+        if self.args.load_policy:
+            np.save(self.log_transfer_dir + "/test_accuracy", self.evaluations)
+            utils.write_table(self.log_transfer_dir + "/test_accuracy", np.asarray(self.evaluations))
+        else:
+            np.save(self.log_dir + "/test_accuracy", self.evaluations)
+            utils.write_table(self.log_dir + "/test_accuracy", np.asarray(self.evaluations))
+    
+        if self.args.evaluate_Q_value:
+            true_Q_value = cal_true_value(env=self.env, policy=self.policy,
+                                          replay_buffer=self.replay_buffer,
+                                          args=self.args)
+            self.writer_test.add_scalar('Q_value', true_Q_value, self.total_timesteps)
+            self.true_Q_vals.append(true_Q_value)
+            utils.write_table(self.log_dir + "/estimate_Q_vals", np.asarray(self.estimate_Q_vals))
+            utils.write_table(self.log_dir + "/true_Q_vals", np.asarray(self.true_Q_vals))
+    
+        self.env.reset()
 
 
 # Runs policy for X episodes and returns average reward
