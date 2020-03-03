@@ -41,7 +41,7 @@ There are 2 key variables that we need to keep track of.
 * Deep Deterministic Policy Gradient (DDPG)
 * Twined Delayed DDPG (TD3)
 * Average-TD3
-* [adInforHRL](https://arxiv.org/pdf/1901.01365.pdf)
+* adInforHRL
 
 ### Dependency
 * MacOS 10.12 or Ubuntu 16.04
