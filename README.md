@@ -59,7 +59,13 @@ python ./main.py
 ### Our performance 
 
 * Single peg-in-hole. 
-![Loading...](figures/single_assembly_performance.pdf)
+![Loading...](figures/single_assembly_performance.png)
+
+* Double peg-in-hole. 
+![Loading...](figures/double_assembly_performance.png)
+
+* Triple peg-in-hole. 
+![Loading...](figures/triple_assembly_performance.png)
 
 # References
 * [Deterministic Policy Gradient Algorithms](http://proceedings.mlr.press/v32/silver14.pdf)
