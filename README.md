@@ -41,7 +41,7 @@ There are 2 key variables that we need to keep track of.
 * Deep Deterministic Policy Gradient (DDPG)
 * Twined Delayed DDPG (TD3)
 * Average-TD3
-* [HRL(SAC-AWMP)](https://arxiv.org/abs/2002.02829)
+* [adInforHRL](https://arxiv.org/pdf/1901.01365.pdf)
 
 ### Dependency
 * MacOS 10.12 or Ubuntu 16.04
@@ -70,6 +70,6 @@ python ./main.py
 # References
 * [Deterministic Policy Gradient Algorithms](http://proceedings.mlr.press/v32/silver14.pdf)
 * [Continuous control with deep reinforcement learning](https://arxiv.org/abs/1509.02971)
-* [Feedback Deep Deterministic Policy Gradient with Fuzzy Reward for Robotic Multiple Peg-in-hole Assembly Tasks](https://ieeexplore.ieee.org/abstract/document/8454796)
+* [Feedback Deep Deterministic Policy Gradient with Fuzzy Reward for Robotic Multiple Peg-in-hole Assembly Tasks](https://ieeexplore.ieee.org/abstract/document/8454796) 
 * [Deep reinforcement learning for high precision assembly tasks](https://ieeexplore.ieee.org/abstract/document/8202244)
 * Some hyper-parameters are from [OpenAI Baselines](https://github.com/openai/baselines) and [Deep_RL](https://github.com/ShangtongZhang/DeepRL) 
