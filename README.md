@@ -37,6 +37,8 @@ There are 2 key variables that we need to keep track of.
 
 **WEBOTS_PID** is used to run multiple simulations at the same time. It shoud be set with the PID (Process ID) of the running Webots instance to which you want to connect your controller. Process ID can be found through the system monitor. If you are not running multiple simulations, you can delete this variable.
 
+## Run RL-based algorithms
+
 ### Implemented algorithms:
 * Deep Deterministic Policy Gradient (DDPG)
 * Twined Delayed DDPG (TD3)
